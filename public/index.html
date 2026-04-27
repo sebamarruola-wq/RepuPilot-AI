@@ -1,1 +1,764 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RepuPilot AI — Responde reseñas con IA</title>
+<meta name="description" content="Genera respuestas profesionales a tus reseñas de Google en segundos. RepuPilot AI ayuda a negocios locales a mejorar su reputación online.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #0F1B2D; --navy2: #1A2E48; --navy3: #243D5C;
+    --teal: #00C896; --teal2: #00A67A; --teal3: #007A59;
+    --cream: #F7F4EF; --cream2: #EDE9E1;
+    --gray: #6B7280; --gray2: #9CA3AF;
+    --white: #FFFFFF; --warn: #F59E0B; --red: #EF4444;
+    --radius: 12px; --radius-lg: 20px;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--navy); line-height: 1.6; font-size: 16px; }
+  h1,h2,h3,h4 { font-family: 'Fraunces', serif; line-height: 1.2; }
 
+  nav { position: sticky; top: 0; z-index: 100; background: rgba(247,244,239,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--cream2); padding: 0 5%; display: flex; align-items: center; justify-content: space-between; height: 64px; }
+  .logo { font-family: 'Fraunces', serif; font-weight: 700; font-size: 22px; color: var(--navy); display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .logo-dot { width: 10px; height: 10px; background: var(--teal); border-radius: 50%; display: inline-block; }
+  .nav-links { display: flex; gap: 28px; align-items: center; }
+  .nav-links a { text-decoration: none; color: var(--gray); font-size: 15px; font-weight: 500; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--navy); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 22px; border-radius: 8px; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.2s; text-decoration: none; border: none; font-family: 'DM Sans', sans-serif; }
+  .btn-primary { background: var(--navy); color: var(--white); }
+  .btn-primary:hover { background: var(--navy2); transform: translateY(-1px); }
+  .btn-teal { background: var(--teal); color: var(--navy); }
+  .btn-teal:hover { background: var(--teal2); transform: translateY(-1px); }
+  .btn-outline { background: transparent; color: var(--navy); border: 1.5px solid var(--navy); }
+  .btn-outline:hover { background: var(--navy); color: var(--white); }
+  .btn-lg { padding: 14px 32px; font-size: 17px; border-radius: 10px; }
+
+  .hero { padding: 80px 5% 60px; max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+  .hero-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--teal); color: var(--navy); padding: 6px 14px; border-radius: 100px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
+  .hero h1 { font-size: clamp(36px, 5vw, 56px); font-weight: 700; color: var(--navy); margin-bottom: 20px; }
+  .hero h1 em { font-style: italic; color: var(--teal2); }
+  .hero p { font-size: 18px; color: var(--gray); margin-bottom: 32px; font-weight: 400; line-height: 1.7; }
+  .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 32px; }
+  .trust-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .trust-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--gray); font-weight: 500; }
+  .trust-check { width: 16px; height: 16px; background: var(--teal); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .trust-check::after { content: '✓'; color: var(--navy); font-size: 10px; font-weight: 700; }
+
+  .hero-visual {}
+  .review-card { background: var(--white); border-radius: var(--radius-lg); padding: 24px; box-shadow: 0 4px 40px rgba(15,27,45,0.12); border: 1px solid var(--cream2); }
+  .review-stars { color: var(--warn); font-size: 18px; margin-bottom: 8px; }
+  .review-text { font-size: 14px; color: var(--gray); line-height: 1.6; margin-bottom: 16px; font-style: italic; }
+  .ai-response-preview { margin-top: 16px; background: var(--cream); border-radius: 10px; padding: 16px; border-left: 3px solid var(--teal); }
+  .ai-label { font-size: 11px; font-weight: 700; color: var(--teal2); letter-spacing: 0.5px; margin-bottom: 8px; text-transform: uppercase; }
+  .ai-text { font-size: 13px; color: var(--navy); line-height: 1.6; }
+  .ai-disclaimer { font-size: 11px; color: var(--gray2); margin-top: 8px; font-style: italic; }
+
+  .strip { background: var(--navy); padding: 20px 5%; }
+  .strip-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 16px; }
+  .strip-item { color: var(--cream); font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+  .strip-dot { width: 6px; height: 6px; background: var(--teal); border-radius: 50%; }
+
+  section.content-section { padding: 80px 5%; max-width: 1100px; margin: 0 auto; }
+  .section-label { font-size: 12px; font-weight: 700; color: var(--teal2); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+  .section-title { font-size: clamp(28px, 4vw, 42px); font-weight: 700; color: var(--navy); margin-bottom: 16px; }
+  .section-sub { font-size: 18px; color: var(--gray); max-width: 560px; line-height: 1.7; }
+  .section-header { margin-bottom: 56px; }
+
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 32px; }
+  .step-num { width: 40px; height: 40px; background: var(--teal); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-weight: 700; font-size: 18px; color: var(--navy); margin-bottom: 16px; }
+  .step h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; color: var(--navy); font-family: 'DM Sans', sans-serif; }
+  .step p { font-size: 14px; color: var(--gray); line-height: 1.7; }
+
+  .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+  .feature-card { background: var(--white); border-radius: var(--radius-lg); padding: 28px; border: 1px solid var(--cream2); transition: transform 0.2s, box-shadow 0.2s; }
+  .feature-card:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(15,27,45,0.1); }
+  .feature-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 16px; }
+  .feature-card h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; color: var(--navy); font-family: 'DM Sans', sans-serif; }
+  .feature-card p { font-size: 14px; color: var(--gray); line-height: 1.7; }
+
+  .sectors { display: flex; flex-wrap: wrap; gap: 10px; }
+  .sector-pill { background: var(--white); border: 1.5px solid var(--cream2); border-radius: 100px; padding: 8px 18px; font-size: 14px; font-weight: 500; color: var(--navy); transition: all 0.2s; }
+  .sector-pill:hover { border-color: var(--teal); color: var(--teal2); }
+
+  .testimonials { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+  .testimonial { background: var(--white); border-radius: var(--radius-lg); padding: 28px; border: 1px solid var(--cream2); }
+  .test-stars { color: var(--warn); margin-bottom: 12px; font-size: 16px; }
+  .test-text { font-size: 15px; color: var(--navy); line-height: 1.7; margin-bottom: 20px; font-style: italic; }
+  .test-author { display: flex; align-items: center; gap: 12px; }
+  .test-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+  .test-name { font-weight: 600; font-size: 14px; color: var(--navy); }
+  .test-biz { font-size: 12px; color: var(--gray); }
+
+  .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; align-items: start; }
+  .plan { background: var(--white); border-radius: var(--radius-lg); padding: 32px; border: 1px solid var(--cream2); position: relative; }
+  .plan.popular { border: 2px solid var(--navy); background: var(--navy); }
+  .popular-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--teal); color: var(--navy); font-size: 12px; font-weight: 700; padding: 4px 16px; border-radius: 100px; white-space: nowrap; }
+  .plan-name { font-size: 14px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .plan.popular .plan-name { color: var(--gray2); }
+  .plan-price { font-family: 'Fraunces', serif; font-size: 48px; font-weight: 700; color: var(--navy); margin-bottom: 4px; line-height: 1; }
+  .plan.popular .plan-price { color: var(--white); }
+  .plan-period { font-size: 14px; color: var(--gray); margin-bottom: 24px; }
+  .plan.popular .plan-period { color: var(--gray2); }
+  .plan-features { list-style: none; margin-bottom: 28px; display: flex; flex-direction: column; gap: 10px; }
+  .plan-features li { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--navy); }
+  .plan.popular .plan-features li { color: var(--cream); }
+  .pf-check { width: 18px; height: 18px; background: var(--teal); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 10px; color: var(--navy); font-weight: 700; }
+  .pf-x { width: 18px; height: 18px; background: var(--cream2); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 10px; color: var(--gray2); font-weight: 700; }
+
+  .faq-list { display: flex; flex-direction: column; }
+  .faq-item { border-bottom: 1px solid var(--cream2); }
+  .faq-q { padding: 20px 0; font-size: 16px; font-weight: 600; color: var(--navy); cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+  .faq-q:hover { color: var(--teal2); }
+  .faq-arrow { font-size: 20px; color: var(--teal); transition: transform 0.2s; }
+  .faq-a { padding: 0 0 20px; font-size: 15px; color: var(--gray); line-height: 1.7; display: none; }
+  .faq-item.open .faq-a { display: block; }
+  .faq-item.open .faq-arrow { transform: rotate(45deg); }
+
+  .blog-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+  .blog-card { background: var(--white); border-radius: var(--radius); padding: 20px; border: 1px solid var(--cream2); display: flex; gap: 14px; align-items: flex-start; }
+  .blog-num { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 700; color: var(--cream2); flex-shrink: 0; line-height: 1; }
+  .blog-title { font-size: 14px; font-weight: 600; color: var(--navy); line-height: 1.4; }
+  .blog-kw { font-size: 12px; color: var(--teal2); margin-top: 4px; font-weight: 500; }
+
+  .cta-section { background: var(--navy); border-radius: var(--radius-lg); padding: 64px 48px; text-align: center; margin: 0 5% 80px; }
+  .cta-section h2 { color: var(--white); font-size: clamp(28px, 4vw, 42px); margin-bottom: 16px; }
+  .cta-section p { color: var(--gray2); font-size: 18px; margin-bottom: 36px; }
+
+  footer { background: var(--navy); padding: 40px 5%; color: var(--gray2); font-size: 14px; text-align: center; }
+  footer a { color: var(--teal); text-decoration: none; }
+
+  /* PANEL */
+  .panel-view { display: none; background: var(--cream); min-height: 100vh; }
+  .panel-header { background: var(--white); border-bottom: 1px solid var(--cream2); padding: 16px 5%; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; position: sticky; top: 0; z-index: 50; }
+  .panel-nav { display: flex; gap: 4px; flex-wrap: wrap; }
+  .panel-nav-btn { padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; border: none; background: transparent; color: var(--gray); font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+  .panel-nav-btn.active { background: var(--navy); color: var(--white); }
+  .panel-nav-btn:hover:not(.active) { background: var(--cream); color: var(--navy); }
+  .panel-content { max-width: 900px; margin: 0 auto; padding: 40px 5%; }
+
+  .gen-card { background: var(--white); border-radius: var(--radius-lg); padding: 32px; border: 1px solid var(--cream2); margin-bottom: 24px; }
+  .gen-card h3 { font-size: 20px; font-weight: 700; color: var(--navy); margin-bottom: 6px; font-family: 'Fraunces', serif; }
+  .gen-card .subtitle { font-size: 14px; color: var(--gray); margin-bottom: 24px; }
+  label { display: block; font-size: 13px; font-weight: 600; color: var(--navy); margin-bottom: 6px; margin-top: 16px; }
+  textarea, input, select { width: 100%; border: 1.5px solid var(--cream2); border-radius: 8px; padding: 12px 14px; font-size: 14px; font-family: 'DM Sans', sans-serif; color: var(--navy); background: var(--cream); outline: none; transition: border-color 0.2s; resize: vertical; }
+  textarea:focus, input:focus, select:focus { border-color: var(--teal); background: var(--white); }
+  textarea { min-height: 100px; }
+  .options-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+  .opt-btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1.5px solid var(--cream2); background: var(--white); color: var(--gray); transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
+  .opt-btn.selected { border-color: var(--navy); background: var(--navy); color: var(--white); }
+  .opt-btn:hover:not(.selected) { border-color: var(--navy); color: var(--navy); }
+  .gen-btn { margin-top: 20px; width: 100%; padding: 14px; background: var(--navy); color: var(--white); border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .gen-btn:hover { background: var(--navy2); }
+  .gen-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .results-area { margin-top: 24px; display: flex; flex-direction: column; gap: 16px; }
+  .result-card { background: var(--cream); border-radius: var(--radius); padding: 20px; border: 1px solid var(--cream2); }
+  .result-label { font-size: 11px; font-weight: 700; color: var(--teal2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .result-text { font-size: 14px; color: var(--navy); line-height: 1.7; white-space: pre-wrap; }
+  .result-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .copy-btn { padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--cream2); background: var(--white); color: var(--gray); transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
+  .copy-btn:hover { border-color: var(--teal); color: var(--teal2); }
+  .copy-btn.copied { background: var(--teal); color: var(--navy); border-color: var(--teal); }
+  .disclaimer { font-size: 12px; color: var(--gray2); font-style: italic; margin-top: 10px; }
+
+  .loading { display: flex; flex-direction: column; align-items: center; padding: 40px; gap: 12px; }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--cream2); border-top: 3px solid var(--teal); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .tips-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .tip-card { background: var(--white); border-radius: var(--radius); padding: 20px; border-left: 4px solid var(--teal); }
+  .tip-card h4 { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+  .tip-card p { font-size: 13px; color: var(--gray); line-height: 1.6; }
+
+  .history-list { display: flex; flex-direction: column; gap: 12px; }
+  .history-item { background: var(--white); border-radius: var(--radius); padding: 16px 20px; border: 1px solid var(--cream2); display: flex; justify-content: space-between; align-items: center; }
+  .history-meta { font-size: 12px; color: var(--gray2); }
+  .history-preview { font-size: 14px; color: var(--navy); margin-top: 2px; }
+  .history-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 100px; }
+  .hb-pos { background: #D1FAE5; color: #065F46; }
+  .hb-neg { background: #FEE2E2; color: #991B1B; }
+  .hb-neu { background: #FEF3C7; color: #92400E; }
+
+  .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .usage-bar { background: var(--cream2); border-radius: 100px; height: 8px; overflow: hidden; margin-top: 6px; }
+  .usage-fill { height: 100%; background: var(--teal); border-radius: 100px; transition: width 0.5s ease; }
+  .usage-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--gray); margin-bottom: 4px; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .error-box { background: #FEE2E2; border: 1px solid #FECACA; border-radius: var(--radius); padding: 16px; color: #991B1B; font-size: 14px; margin-top: 16px; }
+
+  @media (max-width: 768px) {
+    .hero { grid-template-columns: 1fr; gap: 40px; padding: 40px 5%; }
+    .hero-visual { display: none; }
+    .profile-grid { grid-template-columns: 1fr; }
+    nav .nav-links { display: none; }
+    .cta-section { padding: 40px 24px; margin: 0 5% 60px; }
+    .panel-nav-btn { font-size: 12px; padding: 6px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LANDING -->
+<div id="landing">
+<nav>
+  <div class="logo" onclick="showLanding()"><span class="logo-dot"></span>RepuPilot AI</div>
+  <div class="nav-links">
+    <a href="#como-funciona">Cómo funciona</a>
+    <a href="#funciones">Funciones</a>
+    <a href="#precios">Precios</a>
+    <a href="#faq">FAQ</a>
+  </div>
+  <button class="btn btn-primary" onclick="showPanel()">Probar gratis</button>
+</nav>
+
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">✦ Inteligencia artificial para negocios locales</div>
+    <h1>Responde mejor a tus reseñas.<br><em>Gana más clientes.</em></h1>
+    <p>RepuPilot AI genera respuestas profesionales a tus reseñas de Google en segundos. Sin perder tiempo. Sin sonar a robot.</p>
+    <div class="hero-ctas">
+      <button class="btn btn-teal btn-lg" onclick="showPanel()">Empezar gratis — sin tarjeta</button>
+      <a href="#como-funciona" class="btn btn-outline btn-lg">Ver cómo funciona</a>
+    </div>
+    <div class="trust-row">
+      <div class="trust-item"><div class="trust-check"></div>Sin contratos</div>
+      <div class="trust-item"><div class="trust-check"></div>Cancela cuando quieras</div>
+      <div class="trust-item"><div class="trust-check"></div>10 generaciones gratis</div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="review-card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <div style="width:36px;height:36px;background:#FEF3C7;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#92400E;">MC</div>
+        <div><div style="font-weight:600;font-size:13px;">María C.</div><div style="font-size:12px;color:#9CA3AF;">Google · hace 2 días</div></div>
+      </div>
+      <div class="review-stars">★★★★★</div>
+      <div class="review-text">"Vine recomendada y no me defraudó. El trato muy profesional y el resultado mejor de lo esperado. Sin duda vuelvo."</div>
+      <div class="ai-response-preview">
+        <div class="ai-label">✦ Respuesta generada por RepuPilot AI</div>
+        <div class="ai-text">¡Gracias, María! Nos alegra mucho que hayas venido y que la experiencia haya superado tus expectativas. Es un placer tenerte como clienta y te esperamos cuando quieras.</div>
+        <div class="ai-disclaimer">Revisa siempre el texto antes de publicarlo.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="strip">
+  <div class="strip-inner">
+    <div class="strip-item"><div class="strip-dot"></div>Respuestas en menos de 10 segundos</div>
+    <div class="strip-item"><div class="strip-dot"></div>3 opciones por generación</div>
+    <div class="strip-item"><div class="strip-dot"></div>Tono 100% personalizable</div>
+    <div class="strip-item"><div class="strip-dot"></div>Funciona para cualquier sector</div>
+  </div>
+</div>
+
+<section class="content-section" id="como-funciona">
+  <div class="section-header">
+    <div class="section-label">Cómo funciona</div>
+    <h2 class="section-title">Tres pasos. Menos de un minuto.</h2>
+    <p class="section-sub">No hace falta ser experto en marketing. RepuPilot AI hace el trabajo pesado por ti.</p>
+  </div>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><h3>Pega la reseña</h3><p>Copia la reseña recibida en Google y pégala. Funciona con textos positivos, neutros o negativos.</p></div>
+    <div class="step"><div class="step-num">2</div><h3>Elige el tono</h3><p>Profesional, cercano, empático, premium o humilde. Adapta la respuesta a tu imagen de marca.</p></div>
+    <div class="step"><div class="step-num">3</div><h3>Copia y publica</h3><p>Obtienes 3 respuestas distintas. Elige la que más te guste y publícala en Google Business.</p></div>
+    <div class="step"><div class="step-num">4</div><h3>Consigue más reseñas</h3><p>Genera mensajes para pedir reseñas por WhatsApp, SMS o email de forma sistemática.</p></div>
+  </div>
+</section>
+
+<div style="background:var(--white);padding:80px 5%;" id="funciones">
+  <div style="max-width:1100px;margin:0 auto;">
+    <div class="section-header">
+      <div class="section-label">Funciones</div>
+      <h2 class="section-title">Todo lo que necesita tu reputación online</h2>
+      <p class="section-sub">Cada función está diseñada para ahorrar tiempo y proteger la imagen de tu negocio.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card"><div class="feature-icon" style="background:#D1FAE5;">💬</div><h3>Respuestas a reseñas positivas</h3><p>Agradece de forma genuina, sin repetirte y sin sonar automatizado.</p></div>
+      <div class="feature-card"><div class="feature-icon" style="background:#FEE2E2;">🛡️</div><h3>Gestión de reseñas negativas</h3><p>Responde a críticas sin sonar defensivo. Convierte un problema en una oportunidad de imagen.</p></div>
+      <div class="feature-card"><div class="feature-icon" style="background:#EFF6FF;">📲</div><h3>Solicitudes de reseña</h3><p>Mensajes listos para WhatsApp, SMS o email para pedir reseñas a tus clientes.</p></div>
+      <div class="feature-card"><div class="feature-icon" style="background:#FEF3C7;">🏪</div><h3>Perfil de negocio</h3><p>Configura tu negocio una vez. Cada respuesta se adapta a tu marca automáticamente.</p></div>
+      <div class="feature-card"><div class="feature-icon" style="background:#F3E8FF;">📋</div><h3>Historial de generaciones</h3><p>Accede a todas las respuestas generadas. Reutiliza, edita o exporta en cualquier momento.</p></div>
+      <div class="feature-card"><div class="feature-icon" style="background:#F0FFF4;">📚</div><h3>Mejores prácticas</h3><p>Consejos breves y accionables sobre gestión de reputación online.</p></div>
+    </div>
+  </div>
+</div>
+
+<section class="content-section">
+  <div class="section-header">
+    <div class="section-label">Sectores</div>
+    <h2 class="section-title">Hecho para negocios locales con reputación que cuidar</h2>
+  </div>
+  <div class="sectors">
+    <div class="sector-pill">🏋️ Gimnasios</div>
+    <div class="sector-pill">🦷 Clínicas dentales</div>
+    <div class="sector-pill">✂️ Peluquerías y barberías</div>
+    <div class="sector-pill">🍽️ Restaurantes y cafeterías</div>
+    <div class="sector-pill">🔧 Talleres mecánicos</div>
+    <div class="sector-pill">💆 Centros de estética</div>
+    <div class="sector-pill">🏥 Fisioterapia</div>
+    <div class="sector-pill">🏠 Inmobiliarias</div>
+    <div class="sector-pill">📚 Academias</div>
+    <div class="sector-pill">🐾 Veterinarias</div>
+  </div>
+</section>
+
+<div style="background:var(--navy);padding:80px 5%;">
+  <div style="max-width:1100px;margin:0 auto;">
+    <div class="section-header">
+      <div class="section-label" style="color:var(--teal);">Testimonios</div>
+      <h2 class="section-title" style="color:var(--white);">Lo que dicen los negocios que ya lo usan</h2>
+    </div>
+    <div class="testimonials">
+      <div class="testimonial"><div class="test-stars">★★★★★</div><div class="test-text">"Antes tardaba 10 minutos en responder una reseña. Ahora en 30 segundos tengo tres opciones perfectas."</div><div class="test-author"><div class="test-avatar" style="background:#D1FAE5;color:#065F46;">JL</div><div><div class="test-name">Javier López</div><div class="test-biz">Clínica Dental Sonrisa, Madrid</div></div></div></div>
+      <div class="testimonial"><div class="test-stars">★★★★★</div><div class="test-text">"Una reseña de 2 estrellas se convirtió en un debate positivo porque respondí con calma y profesionalidad."</div><div class="test-author"><div class="test-avatar" style="background:#FEE2E2;color:#991B1B;">MG</div><div><div class="test-name">Marta Guerrero</div><div class="test-biz">Gimnasio Forma Total, Valencia</div></div></div></div>
+      <div class="testimonial"><div class="test-stars">★★★★★</div><div class="test-text">"En un mes pasamos de 12 a 47 reseñas en Google usando el generador de solicitudes por WhatsApp."</div><div class="test-author"><div class="test-avatar" style="background:#EFF6FF;color:#1E40AF;">CR</div><div><div class="test-name">Carlos Ruiz</div><div class="test-biz">Taller Mecánico Ruiz e Hijos, Sevilla</div></div></div></div>
+    </div>
+  </div>
+</div>
+
+<section class="content-section" id="precios">
+  <div class="section-header">
+    <div class="section-label">Precios</div>
+    <h2 class="section-title">Sin letra pequeña. Sin sorpresas.</h2>
+    <p class="section-sub">Empieza gratis. Escala cuando veas los resultados.</p>
+  </div>
+  <div class="pricing-grid">
+    <div class="plan">
+      <div class="plan-name">Free</div>
+      <div class="plan-price">0€</div>
+      <div class="plan-period">para siempre · sin tarjeta</div>
+      <ul class="plan-features">
+        <li><div class="pf-check">✓</div>10 generaciones al mes</li>
+        <li><div class="pf-check">✓</div>Respuestas a reseñas</li>
+        <li><div class="pf-check">✓</div>3 tonos de voz</li>
+        <li><div class="pf-x">✗</div>Solicitudes de reseña</li>
+        <li><div class="pf-x">✗</div>Historial guardado</li>
+      </ul>
+      <button class="btn btn-outline" style="width:100%;padding:12px;" onclick="showPanel()">Empezar gratis</button>
+    </div>
+    <div class="plan popular">
+      <div class="popular-badge">Más popular</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price" style="color:var(--white);">29€</div>
+      <div class="plan-period">al mes · cancela cuando quieras</div>
+      <ul class="plan-features">
+        <li><div class="pf-check">✓</div>200 generaciones al mes</li>
+        <li><div class="pf-check">✓</div>Todos los tonos de voz</li>
+        <li><div class="pf-check">✓</div>Solicitudes de reseña</li>
+        <li><div class="pf-check">✓</div>Historial completo</li>
+        <li><div class="pf-check">✓</div>Exportar a PDF y TXT</li>
+      </ul>
+      <button class="btn btn-teal" style="width:100%;padding:12px;" onclick="showPanel()">Empezar con Pro</button>
+    </div>
+    <div class="plan">
+      <div class="plan-name">Business</div>
+      <div class="plan-price">79€</div>
+      <div class="plan-period">al mes · hasta 5 negocios</div>
+      <ul class="plan-features">
+        <li><div class="pf-check">✓</div>Generaciones ilimitadas</li>
+        <li><div class="pf-check">✓</div>Hasta 5 perfiles de negocio</li>
+        <li><div class="pf-check">✓</div>Acceso multiusuario</li>
+        <li><div class="pf-check">✓</div>Marca blanca</li>
+        <li><div class="pf-check">✓</div>Soporte prioritario</li>
+      </ul>
+      <button class="btn btn-primary" style="width:100%;padding:12px;">Contactar ventas</button>
+    </div>
+  </div>
+</section>
+
+<div style="background:var(--white);padding:80px 5%;" id="faq">
+  <div style="max-width:700px;margin:0 auto;">
+    <div class="section-header">
+      <div class="section-label">FAQ</div>
+      <h2 class="section-title">Preguntas frecuentes</h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">¿Las respuestas suenan a robot? <span class="faq-arrow">+</span></div><div class="faq-a">No. RepuPilot AI genera respuestas naturales, cortas y humanas. Evitamos frases genéricas y adaptamos el tono al tipo de reseña y sector.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">¿Funciona para reseñas negativas? <span class="faq-arrow">+</span></div><div class="faq-a">Sí. Es donde más valor aporta. La IA genera respuestas que reconocen el problema sin sonar defensivo ni agresivo.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">¿Puedo personalizar la voz de mi marca? <span class="faq-arrow">+</span></div><div class="faq-a">Sí. En tu perfil de negocio configuras nombre, sector, ciudad y estilo. Cada respuesta tendrá en cuenta estos datos.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">¿Cómo cancelo la suscripción? <span class="faq-arrow">+</span></div><div class="faq-a">Desde tu panel de usuario, en cualquier momento, sin burocracia ni penalizaciones.</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="cta-section">
+  <h2>Tu reputación online empieza hoy.</h2>
+  <p>Únete a los negocios locales que responden mejor, más rápido y con más profesionalidad.</p>
+  <button class="btn btn-teal btn-lg" onclick="showPanel()">Empezar gratis — sin tarjeta</button>
+  <div style="margin-top:16px;font-size:13px;color:#9CA3AF;">10 generaciones gratis · Sin permanencia · Cancela cuando quieras</div>
+</div>
+
+<footer>
+  <div style="margin-bottom:12px;"><span style="font-family:'Fraunces',serif;font-weight:700;font-size:18px;color:#fff;">RepuPilot AI</span></div>
+  <div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin-bottom:16px;">
+    <a href="#">Privacidad</a><a href="#">Términos</a><a href="#">Contacto</a><a href="#precios">Precios</a>
+  </div>
+  <div>© 2025 RepuPilot AI · Hecho para negocios locales · RGPD compliant</div>
+</footer>
+</div><!-- /landing -->
+
+<!-- PANEL -->
+<div id="panel" class="panel-view">
+  <div class="panel-header">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="logo" onclick="showLanding()"><span class="logo-dot"></span>RepuPilot AI</div>
+      <span style="background:#D1FAE5;color:#065F46;font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;">Plan Free · <span id="usage-count">7</span>/10 generaciones</span>
+    </div>
+    <div class="panel-nav">
+      <button class="panel-nav-btn active" onclick="switchTab(this,'gen')">Generador</button>
+      <button class="panel-nav-btn" onclick="switchTab(this,'request')">Pedir reseñas</button>
+      <button class="panel-nav-btn" onclick="switchTab(this,'history')">Historial</button>
+      <button class="panel-nav-btn" onclick="switchTab(this,'tips')">Consejos</button>
+      <button class="panel-nav-btn" onclick="switchTab(this,'profile')">Mi negocio</button>
+    </div>
+    <button class="btn btn-outline" onclick="showLanding()" style="font-size:13px;padding:6px 14px;">← Inicio</button>
+  </div>
+
+  <div class="panel-content">
+    <div style="background:var(--white);border-radius:var(--radius);padding:16px 20px;border:1px solid var(--cream2);margin-bottom:24px;">
+      <div class="usage-label"><span>Generaciones este mes</span><span style="font-weight:600;"><span id="usage-used">7</span> / 10</span></div>
+      <div class="usage-bar"><div class="usage-fill" id="usage-bar" style="width:70%"></div></div>
+      <div style="font-size:12px;color:var(--gray);margin-top:8px;">¿Necesitas más? <a href="#precios" onclick="showLanding()" style="color:var(--teal2);font-weight:600;text-decoration:none;">Actualiza a Pro por 29€/mes →</a></div>
+    </div>
+
+    <!-- TAB GENERADOR -->
+    <div id="tab-gen" class="tab-panel active">
+      <div class="gen-card">
+        <h3>Responder una reseña</h3>
+        <p class="subtitle">Pega la reseña recibida y obtén 3 respuestas profesionales en segundos.</p>
+        <label>Reseña recibida</label>
+        <textarea id="review-text" placeholder="Pega aquí la reseña de tu cliente..." rows="4"></textarea>
+        <label>Tipo de reseña</label>
+        <div class="options-row" id="review-type">
+          <button class="opt-btn selected" data-val="positiva">⭐ Positiva</button>
+          <button class="opt-btn" data-val="neutra">😐 Neutra</button>
+          <button class="opt-btn" data-val="negativa">⚠️ Negativa</button>
+        </div>
+        <label>Tono de respuesta</label>
+        <div class="options-row" id="review-tone">
+          <button class="opt-btn selected" data-val="cercano">Cercano</button>
+          <button class="opt-btn" data-val="profesional">Profesional</button>
+          <button class="opt-btn" data-val="empático">Empático</button>
+          <button class="opt-btn" data-val="premium">Premium</button>
+          <button class="opt-btn" data-val="humilde">Humilde</button>
+        </div>
+        <button class="gen-btn" id="gen-btn" onclick="generateReviews()">
+          <span id="gen-btn-text">✦ Generar 3 respuestas</span>
+        </button>
+        <div id="results-area" class="results-area"></div>
+      </div>
+    </div>
+
+    <!-- TAB PEDIR RESEÑAS -->
+    <div id="tab-request" class="tab-panel">
+      <div class="gen-card">
+        <h3>Pedir reseñas a tus clientes</h3>
+        <p class="subtitle">Genera mensajes listos para WhatsApp, SMS, email o cartel.</p>
+        <label>Nombre del negocio</label>
+        <input type="text" id="req-business" placeholder="Ej: Clínica Dental Sonrisa">
+        <label>Sector</label>
+        <select id="req-sector">
+          <option value="negocio local">Negocio local</option>
+          <option value="clínica dental">Clínica dental</option>
+          <option value="gimnasio">Gimnasio</option>
+          <option value="peluquería o barbería">Peluquería / Barbería</option>
+          <option value="restaurante o cafetería">Restaurante / Cafetería</option>
+          <option value="taller mecánico">Taller mecánico</option>
+          <option value="centro de estética">Centro de estética</option>
+          <option value="fisioterapia">Fisioterapia</option>
+          <option value="inmobiliaria">Inmobiliaria</option>
+          <option value="academia">Academia</option>
+        </select>
+        <label>Canal</label>
+        <div class="options-row" id="req-channel">
+          <button class="opt-btn selected" data-val="WhatsApp">📱 WhatsApp</button>
+          <button class="opt-btn" data-val="SMS">💬 SMS</button>
+          <button class="opt-btn" data-val="email">✉️ Email</button>
+          <button class="opt-btn" data-val="cartel o QR en mostrador">🖨️ Cartel / QR</button>
+        </div>
+        <label>Tono</label>
+        <div class="options-row" id="req-tone">
+          <button class="opt-btn selected" data-val="cercano">Cercano</button>
+          <button class="opt-btn" data-val="profesional">Profesional</button>
+          <button class="opt-btn" data-val="directo">Directo</button>
+        </div>
+        <button class="gen-btn" id="req-btn" onclick="generateRequest()">
+          <span id="req-btn-text">✦ Generar mensaje</span>
+        </button>
+        <div id="request-results" class="results-area"></div>
+      </div>
+    </div>
+
+    <!-- TAB HISTORIAL -->
+    <div id="tab-history" class="tab-panel">
+      <div class="gen-card">
+        <h3>Historial de generaciones</h3>
+        <p class="subtitle">Tus últimas generaciones de esta sesión.</p>
+        <div id="history-list" class="history-list">
+          <div style="text-align:center;padding:40px;color:var(--gray2);">
+            <div style="font-size:32px;margin-bottom:8px;">📋</div>
+            <div>Aún no has generado ninguna respuesta.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB CONSEJOS -->
+    <div id="tab-tips" class="tab-panel">
+      <div class="gen-card">
+        <h3>Mejores prácticas de reputación online</h3>
+        <p class="subtitle">Consejos concretos para mejorar tu imagen en Google.</p>
+        <div class="tips-grid" style="margin-top:16px;">
+          <div class="tip-card"><h4>Responde siempre</h4><p>Google valora que respondas a todas las reseñas. Un negocio que responde genera más confianza.</p></div>
+          <div class="tip-card"><h4>Hazlo en menos de 48h</h4><p>La rapidez importa. Una respuesta rápida a una reseña negativa puede cambiar la percepción antes de que el daño sea mayor.</p></div>
+          <div class="tip-card"><h4>No copies siempre lo mismo</h4><p>Varía las respuestas. Los clientes notan cuando usas siempre la misma fórmula.</p></div>
+          <div class="tip-card"><h4>Incluye el nombre del cliente</h4><p>Personalizar con el nombre hace la respuesta más humana. Añádelo antes de publicar.</p></div>
+          <div class="tip-card"><h4>Pide reseñas en el mejor momento</h4><p>Justo después de la visita, cuando la experiencia está fresca. Usa WhatsApp con el enlace directo.</p></div>
+          <div class="tip-card"><h4>Nunca ofrezcas incentivos</h4><p>Pedir reseñas a cambio de descuentos va contra las políticas de Google y puede acarrear sanciones.</p></div>
+          <div class="tip-card"><h4>Mantén actualizado tu perfil</h4><p>Fotos, horarios y descripción actualizados mejoran el impacto de tus respuestas.</p></div>
+          <div class="tip-card"><h4>Una queja = una oportunidad pública</h4><p>Los lectores ven cómo resuelves problemas. Una buena respuesta a una crítica puede convencer a más clientes que diez reseñas de 5 estrellas.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB MI NEGOCIO -->
+    <div id="tab-profile" class="tab-panel">
+      <div class="gen-card">
+        <h3>Perfil de mi negocio</h3>
+        <p class="subtitle">Esta información personaliza todas tus respuestas automáticamente.</p>
+        <div class="profile-grid">
+          <div><label>Nombre del negocio</label><input type="text" id="p-name" placeholder="Ej: Barbería El Rincón"></div>
+          <div><label>Sector</label>
+            <select id="p-sector">
+              <option value="negocio local">Negocio local</option>
+              <option value="clínica dental">Clínica dental</option>
+              <option value="gimnasio">Gimnasio</option>
+              <option value="peluquería o barbería">Peluquería / Barbería</option>
+              <option value="restaurante o cafetería">Restaurante / Cafetería</option>
+              <option value="taller mecánico">Taller mecánico</option>
+              <option value="centro de estética">Centro de estética</option>
+              <option value="fisioterapia">Fisioterapia</option>
+              <option value="inmobiliaria">Inmobiliaria</option>
+              <option value="academia">Academia</option>
+            </select>
+          </div>
+          <div><label>Ciudad</label><input type="text" id="p-city" placeholder="Ej: Granada"></div>
+          <div><label>Estilo de comunicación</label>
+            <select id="p-style">
+              <option value="cercano y amigable">Cercano y amigable</option>
+              <option value="profesional y formal">Profesional y formal</option>
+              <option value="premium y exclusivo">Premium y exclusivo</option>
+              <option value="directo y claro">Directo y claro</option>
+            </select>
+          </div>
+        </div>
+        <label>Palabras clave del negocio (opcional)</label>
+        <input type="text" id="p-keywords" placeholder="Ej: corte clásico, servicio personalizado, experiencia familiar...">
+        <button class="gen-btn" style="margin-top:16px;" onclick="saveProfile()">Guardar perfil</button>
+        <div id="profile-saved" style="display:none;text-align:center;margin-top:12px;color:var(--teal2);font-weight:600;font-size:14px;">✓ Perfil guardado correctamente</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let generationsUsed = 7;
+  const MAX_GEN = 10;
+  let sessionHistory = [];
+
+  function updateUsage() {
+    document.getElementById('usage-count').textContent = generationsUsed;
+    document.getElementById('usage-used').textContent = generationsUsed;
+    document.getElementById('usage-bar').style.width = Math.min((generationsUsed / MAX_GEN) * 100, 100) + '%';
+  }
+
+  async function callBackend(prompt) {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Error del servidor');
+    }
+    const data = await res.json();
+    return data.text || '';
+  }
+
+  function getSelected(id) {
+    const btn = document.querySelector('#' + id + ' .opt-btn.selected');
+    return btn ? btn.dataset.val : '';
+  }
+
+  function parseResponses(text) {
+    const parts = text.split(/\n(?=\d+\.)/);
+    return parts.map(p => p.replace(/^\d+\.\s*/, '').trim()).filter(p => p.length > 10);
+  }
+
+  function renderResults(responses, containerId) {
+    const area = document.getElementById(containerId);
+    const labels = ['Opción A', 'Opción B', 'Opción C'];
+    area.innerHTML = '';
+    responses.forEach((resp, i) => {
+      const clean = resp.replace('[⚠ Revisa este texto antes de publicarlo]', '').trim();
+      const card = document.createElement('div');
+      card.className = 'result-card';
+      const safeText = clean.replace(/'/g, "\\'").replace(/`/g, '\\`');
+      card.innerHTML = `
+        <div class="result-label">${labels[i] || 'Opción ' + (i+1)}</div>
+        <div class="result-text">${clean}</div>
+        <div class="disclaimer">⚠ Revisa este texto antes de publicarlo.</div>
+        <div class="result-actions">
+          <button class="copy-btn" onclick="copyText(this, '${safeText}')">Copiar</button>
+          <button class="copy-btn" onclick="exportTxt('${safeText}')">Exportar .txt</button>
+        </div>`;
+      area.appendChild(card);
+    });
+  }
+
+  async function generateReviews() {
+    if (generationsUsed >= MAX_GEN) {
+      alert('Has alcanzado el límite de generaciones del plan Free. Actualiza a Pro para continuar.');
+      return;
+    }
+    const reviewText = document.getElementById('review-text').value.trim();
+    if (!reviewText) { alert('Por favor, pega una reseña antes de generar.'); return; }
+
+    const type = getSelected('review-type');
+    const tone = getSelected('review-tone');
+    const p = getProfileData();
+    const profileCtx = p.name ? `Negocio: "${p.name}" · Sector: ${p.sector}${p.city ? ' · Ciudad: ' + p.city : ''}${p.style ? ' · Estilo: ' + p.style : ''}${p.keywords ? ' · Palabras clave: ' + p.keywords : ''}.` : '';
+    const prompt = `${profileCtx ? profileCtx + '\n\n' : ''}Genera 3 respuestas distintas para la siguiente reseña ${type} con tono ${tone}:\n\n"${reviewText}"`;
+
+    const btn = document.getElementById('gen-btn');
+    btn.disabled = true;
+    document.getElementById('gen-btn-text').textContent = '⟳ Generando respuestas...';
+    document.getElementById('results-area').innerHTML = '<div class="loading"><div class="spinner"></div><div style="font-size:14px;color:var(--gray);">La IA está redactando tus respuestas...</div></div>';
+
+    try {
+      const result = await callBackend(prompt);
+      const responses = parseResponses(result);
+      renderResults(responses, 'results-area');
+      generationsUsed++;
+      updateUsage();
+      addToHistory(reviewText.substring(0, 60) + '...', type);
+    } catch(e) {
+      document.getElementById('results-area').innerHTML = `<div class="error-box">Error: ${e.message}</div>`;
+    }
+    btn.disabled = false;
+    document.getElementById('gen-btn-text').textContent = '✦ Generar 3 respuestas';
+  }
+
+  async function generateRequest() {
+    const business = document.getElementById('req-business').value.trim() || 'nuestro negocio';
+    const sector = document.getElementById('req-sector').value;
+    const channel = getSelected('req-channel');
+    const tone = getSelected('req-tone');
+    const prompt = `Genera 3 mensajes distintos para pedir una reseña de Google por ${channel}, con tono ${tone}, para un ${sector} llamado "${business}". El mensaje debe ser breve, natural y no pesado. Marca el enlace con [ENLACE A GOOGLE].`;
+
+    const btn = document.getElementById('req-btn');
+    btn.disabled = true;
+    document.getElementById('req-btn-text').textContent = '⟳ Generando mensaje...';
+    document.getElementById('request-results').innerHTML = '<div class="loading"><div class="spinner"></div><div style="font-size:14px;color:var(--gray);">Redactando tu mensaje...</div></div>';
+
+    try {
+      const result = await callBackend(prompt);
+      const responses = parseResponses(result);
+      renderResults(responses, 'request-results');
+    } catch(e) {
+      document.getElementById('request-results').innerHTML = `<div class="error-box">Error: ${e.message}</div>`;
+    }
+    btn.disabled = false;
+    document.getElementById('req-btn-text').textContent = '✦ Generar mensaje';
+  }
+
+  function copyText(btn, text) {
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = '✓ Copiado';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function exportTxt(text) {
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'respuesta-resena.txt'; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function addToHistory(preview, type) {
+    sessionHistory.unshift({ preview, type, time: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) });
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const list = document.getElementById('history-list');
+    if (!sessionHistory.length) return;
+    const bc = { positiva: 'hb-pos', neutra: 'hb-neu', negativa: 'hb-neg' };
+    list.innerHTML = sessionHistory.map(h => `
+      <div class="history-item">
+        <div><div class="history-preview">${h.preview}</div><div class="history-meta">${h.time}</div></div>
+        <div class="history-badge ${bc[h.type] || 'hb-neu'}">${h.type}</div>
+      </div>`).join('');
+  }
+
+  function getProfileData() {
+    return {
+      name: document.getElementById('p-name')?.value || '',
+      sector: document.getElementById('p-sector')?.value || 'negocio local',
+      city: document.getElementById('p-city')?.value || '',
+      style: document.getElementById('p-style')?.value || '',
+      keywords: document.getElementById('p-keywords')?.value || ''
+    };
+  }
+
+  function saveProfile() {
+    document.getElementById('profile-saved').style.display = 'block';
+    setTimeout(() => document.getElementById('profile-saved').style.display = 'none', 2000);
+  }
+
+  function switchTab(btn, tab) {
+    document.querySelectorAll('.panel-nav-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+  }
+
+  function showPanel() {
+    document.getElementById('landing').style.display = 'none';
+    document.getElementById('panel').style.display = 'block';
+    window.scrollTo(0, 0);
+  }
+
+  function showLanding() {
+    document.getElementById('panel').style.display = 'none';
+    document.getElementById('landing').style.display = 'block';
+    window.scrollTo(0, 0);
+  }
+
+  function toggleFaq(el) {
+    el.closest('.faq-item').classList.toggle('open');
+  }
+
+  document.querySelectorAll('.options-row').forEach(row => {
+    row.querySelectorAll('.opt-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        row.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+      });
+    });
+  });
+</script>
+</body>
+</html>
